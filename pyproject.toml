@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "py-process-hooker"
+version = "0.1.1"
+authors = [
+  { name="kanadeblisst", email="kanade@blisst.cn" },
+]
+description = "Inject python into other processes and implement Hook and active calls, supporting x86 and x64"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "module_hot_loading",
+    "psutil"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/kanadeblisst00/py_hooker"
+"Bug Tracker" = "https://github.com/kanadeblisst00/py_hooker/issues"
