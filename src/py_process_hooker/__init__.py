@@ -2,7 +2,7 @@
 '''
 Time    : 2023-12-12
 Author  : kanadeblisst
-FileName: py_hooker
+FileName: py_process_hooker
 github ：https://github.com/kanadeblisst00/py_hooker
 国内仓库: http://www.pygrower.cn:21180/kanadeblisst/py_hooker
 Function:  Inject python into other processes and implement 
@@ -17,7 +17,7 @@ else:
     from .hook32 import Hook
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 
 
 __all__ = [
