@@ -29,7 +29,11 @@ def add_runas():
     if not windll.shell32.IsUserAnAdmin():
         windll.shell32.ShellExecuteW(None, "runas", exe_path, __file__, None, 1)
     reg_path = r"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
-    reg_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_path, access=winreg.KEY_SET_VALUE | winreg.KEY_READ)
+    try:
+        reg_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_path, access=winreg.KEY_SET_VALUE | winreg.KEY_READ)
+    except FileNotFoundError:
+        winreg.CreateKey(winreg.HKEY_CURRENT_USER, reg_path)
+        return add_runas()
     runas_value = "~ RUNASADMIN"
     try:
         value = winreg.QueryValueEx(reg_key, exe_path)
@@ -38,6 +42,7 @@ def add_runas():
     else:
         if runas_value[2:] not in value[0]:
             winreg.SetValueEx(reg_key, exe_path, 0, winreg.REG_SZ, value[0] + ' ' + runas_value[2:])
+    winreg.CloseKey(reg_key)
 
 def get_func_offset(dll, export_func_name):
     '''获取dll导出函数的偏移'''
@@ -53,6 +58,7 @@ def init_python_in_process(hProcess, dll_addr, dllpath, py_code_path=None, open_
     SetOpenConsole =  dll_addr + get_func_offset(dll, "SetOpenConsole")
     RunPythonConsole =  dll_addr + get_func_offset(dll, "RunPythonConsole")
     RunPythonFile = dll_addr + get_func_offset(dll, "RunPythonFile")
+    RunPythonFileWithPyRun = dll_addr + get_func_offset(dll, "RunPythonFileWithPyRun")
     # 设置Python的路径
     PythonPath = os.path.dirname(sys.executable)
     lpPythonPath = VirtualAllocEx(hProcess, None, MAX_PATH, MEM_COMMIT, PAGE_READWRITE)
@@ -67,10 +73,13 @@ def init_python_in_process(hProcess, dll_addr, dllpath, py_code_path=None, open_
         hRemote = DelayCreateRemoteThread(hProcess, None, 0, RunPythonConsole, None, 0, None)
         CloseHandle(hRemote)
     else:
+        # lpPyCodePath = VirtualAllocEx(hProcess, None, MAX_PATH, MEM_COMMIT, PAGE_READWRITE)
+        # WriteProcessMemory(hProcess, lpPyCodePath, c_wchar_p(py_code_path), MAX_PATH, byref(c_ulong()))
+        # hRemote = DelayCreateRemoteThread(hProcess, None, 0, RunPythonFile, lpPyCodePath, 0, None)
         lpPyCodePath = VirtualAllocEx(hProcess, None, MAX_PATH, MEM_COMMIT, PAGE_READWRITE)
-        WriteProcessMemory(hProcess, lpPyCodePath, c_wchar_p(py_code_path), MAX_PATH, byref(c_ulong()))
-        hRemote = DelayCreateRemoteThread(hProcess, None, 0, RunPythonFile, lpPyCodePath, 0, None)
-        time.sleep(1.5)
+        WriteProcessMemory(hProcess, lpPyCodePath, c_char_p(py_code_path.encode()), MAX_PATH, byref(c_ulong()))
+        hRemote = DelayCreateRemoteThread(hProcess, None, 0, RunPythonFileWithPyRun, lpPyCodePath, 0, None)
+        time.sleep(3)
         VirtualFreeEx(hProcess, lpPyCodePath, 0, MEM_RELEASE)
         CloseHandle(hRemote)
 
@@ -141,7 +150,7 @@ def inject_python_and_monitor_dir(process_name, _main_path, open_console=True, o
     _main_path = os.path.abspath(_main_path)
     if pid == os.getpid():
         if on_startup and callable(on_startup):
-            on_startup()
+            on_startup(_main_path)
         init_monitor(_main_path)
     else:
         inject_python_to_process(pid, open_console=open_console, py_code_path=_main_path)
