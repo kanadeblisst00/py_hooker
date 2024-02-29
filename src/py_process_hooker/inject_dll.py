@@ -77,7 +77,7 @@ def init_python_in_process(hProcess, dll_addr, dllpath, py_code_path=None, open_
         # WriteProcessMemory(hProcess, lpPyCodePath, c_wchar_p(py_code_path), MAX_PATH, byref(c_ulong()))
         # hRemote = DelayCreateRemoteThread(hProcess, None, 0, RunPythonFile, lpPyCodePath, 0, None)
         lpPyCodePath = VirtualAllocEx(hProcess, None, MAX_PATH, MEM_COMMIT, PAGE_READWRITE)
-        WriteProcessMemory(hProcess, lpPyCodePath, c_char_p(py_code_path.encode()), MAX_PATH, byref(c_ulong()))
+        WriteProcessMemory(hProcess, lpPyCodePath, c_char_p(py_code_path.encode("ansi")), MAX_PATH, byref(c_ulong()))
         hRemote = DelayCreateRemoteThread(hProcess, None, 0, RunPythonFileWithPyRun, lpPyCodePath, 0, None)
         time.sleep(3)
         VirtualFreeEx(hProcess, lpPyCodePath, 0, MEM_RELEASE)
