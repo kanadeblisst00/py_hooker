@@ -143,11 +143,12 @@ def init_monitor(_main_path):
     
     event.clear()
 
-def inject_python_and_monitor_dir(process_name, _main_path, open_console=True, on_startup=None, is_monitor=False):
+def inject_python_and_monitor_dir(process_name:str, _main_path:str, open_console=True, on_startup=None, is_monitor=False):
     pid = get_pid_by_name(process_name)
     if not pid:
         raise Exception("请先启动进程后再注入!")
     _main_path = os.path.abspath(_main_path)
+    _main_path = _main_path[0].upper() + _main_path[1:]
     if pid == os.getpid():
         if on_startup and callable(on_startup):
             on_startup(_main_path)

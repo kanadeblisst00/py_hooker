@@ -4,7 +4,6 @@ Time    : 2023-12-12
 Author  : kanadeblisst
 FileName: py_process_hooker
 github ：https://github.com/kanadeblisst00/py_hooker
-国内仓库: http://www.pygrower.cn:21180/kanadeblisst/py_hooker
 Function:  Inject python into other processes and implement 
            Hook and active calls, supporting x86 and x64
 '''
@@ -17,7 +16,7 @@ else:
     from .hook32 import Hook
 
 
-__version__ = "0.2.2"
+__version__ = "0.3.0"
 
 
 __all__ = [
